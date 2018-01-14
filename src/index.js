@@ -263,6 +263,7 @@ const VuePropTypes = {
 
     Object.defineProperty(type, '_vueTypes_isLoose', {
       value: false,
+      writable: true,
     });
 
     Object.defineProperty(type, 'loose', {

@@ -48,7 +48,8 @@ const baseConfig = {
       }),
       commonjs(),
       babel({
-        exclude: 'node_modules/**'
+        exclude: 'node_modules/**',
+        runtimeHelpers: true
       }),
       replace({
         'process.env.NODE_DEBUG': !production
@@ -57,9 +58,21 @@ const baseConfig = {
       globals(),
       builtins()
     ],
-    format: 'iife',
-    name: 'VueTypes',
-    sourcemap: 'inline'
+    output: {
+      format: 'iife',
+      name: 'VueTypes',
+      sourcemap: 'inline'
+    },
+    onwarn(warning) {
+      // Suppress this error message... there are hundreds of them.
+      // Angular team says to ignore it.
+      // https://github.com/rollup/rollup/wiki/Troubleshooting#this-is-undefined
+      if (warning.code === 'THIS_IS_UNDEFINED') {
+        return;
+      }
+
+      console.error(warning.message);
+    }
   },
 
   // test results reporter to use

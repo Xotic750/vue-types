@@ -1,70 +1,35 @@
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+import _typeof from 'babel-runtime/helpers/typeof';
+import _Object$keys from 'babel-runtime/core-js/object/keys';
+import _Object$defineProperties from 'babel-runtime/core-js/object/define-properties';
+import _newArrowCheck from 'babel-runtime/helpers/newArrowCheck';
 
-import isPlainObject from 'lodash.isplainobject';
-import { noop, toType, getType, isFunction, validateType, isInteger, isArray, warn } from './utils';
+var _this = this;
 
-var VuePropTypes = {
+import isPlainObject from 'lodash/isPlainObject';
+import noop from 'lodash/noop';
+import isNil from 'lodash/isNil';
+import stubArray from 'lodash/stubArray';
+import stubObject from 'lodash/stubObject';
 
-  get any() {
-    return toType('any', {
-      type: null
-    });
-  },
+import { toType, getType, isFunction, validateType, isInteger, isArray, warn } from './utils';
 
-  get func() {
-    return toType('function', {
-      type: Function
-    }).def(currentDefaults.func);
-  },
+var typeDefaults = function () {
+  _newArrowCheck(this, _this);
 
-  get bool() {
-    return toType('boolean', {
-      type: Boolean
-    }).def(currentDefaults.bool);
-  },
+  return {
+    func: noop,
+    bool: true,
+    string: '',
+    number: 0,
+    array: stubArray,
+    object: stubObject,
+    integer: 0
+  };
+}.bind(this);
 
-  get string() {
-    return toType('string', {
-      type: String
-    }).def(currentDefaults.string);
-  },
+var currentDefaults = typeDefaults();
 
-  get number() {
-    return toType('number', {
-      type: Number
-    }).def(currentDefaults.number);
-  },
-
-  get array() {
-    return toType('array', {
-      type: Array
-    }).def(currentDefaults.array);
-  },
-
-  get object() {
-    return toType('object', {
-      type: Object
-    }).def(currentDefaults.object);
-  },
-
-  get integer() {
-    return toType('integer', {
-      type: Number,
-      validator: function validator(value) {
-        return isInteger(value);
-      }
-    }).def(currentDefaults.integer);
-  },
-
-  get symbol() {
-    return toType('symbol', {
-      type: null,
-      validator: function validator(value) {
-        return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'symbol';
-      }
-    });
-  },
-
+var VuePropTypes = _Object$defineProperties({
   custom: function custom(validatorFn) {
     var warnMsg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'custom validation failed';
 
@@ -75,28 +40,40 @@ var VuePropTypes = {
     return toType(validatorFn.name || '<<anonymous function>>', {
       validator: function validator() {
         var valid = validatorFn.apply(undefined, arguments);
-        if (!valid) warn(this._vueTypes_name + ' - ' + warnMsg);
+        if (!valid) {
+          warn(String(this._vueTypes_name) + ' - ' + String(warnMsg));
+        }
+
         return valid;
       }
     });
   },
   oneOf: function oneOf(arr) {
+    var _this2 = this;
+
     if (!isArray(arr)) {
       throw new TypeError('[VueTypes error]: You must provide an array as argument');
     }
-    var msg = 'oneOf - value should be one of "' + arr.join('", "') + '"';
+    var msg = 'oneOf - value should be one of "' + String(arr.join('", "')) + '"';
     var allowedTypes = arr.reduce(function (ret, v) {
-      if (v !== null && v !== undefined) {
-        ret.indexOf(v.constructor) === -1 && ret.push(v.constructor);
+      _newArrowCheck(this, _this2);
+
+      if (!isNil(v)) {
+        if (ret.indexOf(v.constructor) === -1) {
+          ret.push(v.constructor);
+        }
       }
       return ret;
-    }, []);
+    }.bind(this), []);
 
     return toType('oneOf', {
       type: allowedTypes.length > 0 ? allowedTypes : null,
       validator: function validator(value) {
         var valid = arr.indexOf(value) !== -1;
-        if (!valid) warn(msg);
+        if (!valid) {
+          warn(msg);
+        }
+
         return valid;
       }
     });
@@ -107,28 +84,34 @@ var VuePropTypes = {
     });
   },
   oneOfType: function oneOfType(arr) {
+    var _this3 = this;
+
     if (!isArray(arr)) {
       throw new TypeError('[VueTypes error]: You must provide an array as argument');
     }
 
     var hasCustomValidators = false;
 
-    var nativeChecks = arr.reduce(function (ret, type, i) {
+    var nativeChecks = arr.reduce(function (ret, type) {
+      _newArrowCheck(this, _this3);
+
       if (isPlainObject(type)) {
         if (type._vueTypes_name === 'oneOf') {
           return ret.concat(type.type || []);
         }
+
         if (type.type && !isFunction(type.validator)) {
           if (isArray(type.type)) return ret.concat(type.type);
           ret.push(type.type);
         } else if (isFunction(type.validator)) {
           hasCustomValidators = true;
         }
+
         return ret;
       }
       ret.push(type);
       return ret;
-    }, []);
+    }.bind(this), []);
 
     if (!hasCustomValidators) {
       // we got just native objects (ie: Array, Object)
@@ -139,33 +122,54 @@ var VuePropTypes = {
     }
 
     var typesStr = arr.map(function (type) {
+      _newArrowCheck(this, _this3);
+
       if (type && isArray(type.type)) {
         return type.type.map(getType);
       }
-      return getType(type);
-    }).reduce(function (ret, type) {
-      return ret.concat(isArray(type) ? type : [type]);
-    }, []).join('", "');
 
-    return this.custom(function oneOfType(value) {
+      return getType(type);
+    }.bind(this)).reduce(function (ret, type) {
+      _newArrowCheck(this, _this3);
+
+      return ret.concat(isArray(type) ? type : [type]);
+    }.bind(this), []).join('", "');
+
+    return this.custom(function (value) {
+      _newArrowCheck(this, _this3);
+
       var valid = arr.some(function (type) {
+        _newArrowCheck(this, _this3);
+
         if (type._vueTypes_name === 'oneOf') {
           return type.type ? validateType(type.type, value, true) : true;
         }
+
         return validateType(type, value, true);
-      });
-      if (!valid) warn('oneOfType - value type should be one of "' + typesStr + '"');
+      }.bind(this));
+
+      if (!valid) {
+        warn('oneOfType - value type should be one of "' + String(typesStr) + '"');
+      }
+
       return valid;
-    });
+    }.bind(this));
   },
   arrayOf: function arrayOf(type) {
     return toType('arrayOf', {
       type: Array,
       validator: function validator(values) {
+        var _this4 = this;
+
         var valid = values.every(function (value) {
+          _newArrowCheck(this, _this4);
+
           return validateType(type, value);
-        });
-        if (!valid) warn('arrayOf - value must be an array of "' + getType(type) + '"');
+        }.bind(this));
+        if (!valid) {
+          warn('arrayOf - value must be an array of "' + String(getType(type)) + '"');
+        }
+
         return valid;
       }
     });
@@ -174,89 +178,177 @@ var VuePropTypes = {
     return toType('objectOf', {
       type: Object,
       validator: function validator(obj) {
-        var valid = Object.keys(obj).every(function (key) {
+        var _this5 = this;
+
+        var valid = _Object$keys(obj).every(function (key) {
+          _newArrowCheck(this, _this5);
+
           return validateType(type, obj[key]);
-        });
-        if (!valid) warn('objectOf - value must be an object of "' + getType(type) + '"');
+        }.bind(this));
+        if (!valid) {
+          warn('objectOf - value must be an object of "' + String(getType(type)) + '"');
+        }
+
         return valid;
       }
     });
   },
   shape: function shape(obj) {
-    var keys = Object.keys(obj);
+    var _this6 = this;
+
+    var keys = _Object$keys(obj);
     var requiredKeys = keys.filter(function (key) {
+      _newArrowCheck(this, _this6);
+
       return obj[key] && obj[key].required === true;
-    });
+    }.bind(this));
 
     var type = toType('shape', {
       type: Object,
       validator: function validator(value) {
-        var _this = this;
+        var _this7 = this;
 
         if (!isPlainObject(value)) {
           return false;
         }
-        var valueKeys = Object.keys(value);
+
+        var valueKeys = _Object$keys(value);
 
         // check for required keys (if any)
         if (requiredKeys.length > 0 && requiredKeys.some(function (req) {
+          _newArrowCheck(this, _this7);
+
           return valueKeys.indexOf(req) === -1;
-        })) {
-          warn('shape - at least one of required properties "' + requiredKeys.join('", "') + '" is not present');
+        }.bind(this))) {
+          warn('shape - at least one of required properties "' + String(requiredKeys.join('", "')) + '" is not present');
+
           return false;
         }
 
         return valueKeys.every(function (key) {
+          _newArrowCheck(this, _this7);
+
           if (keys.indexOf(key) === -1) {
-            if (_this._vueTypes_isLoose === true) return true;
-            warn('shape - object is missing "' + key + '" property');
+            if (this._vueTypes_isLoose === true) {
+              return true;
+            }
+
+            warn('shape - object is missing "' + String(key) + '" property');
+
             return false;
           }
-          var type = obj[key];
-          return validateType(type, value[key]);
-        });
+
+          return validateType(obj[key], value[key]);
+        }.bind(this));
       }
     });
 
     Object.defineProperty(type, '_vueTypes_isLoose', {
-      enumerable: false,
-      writable: true,
-      value: false
+      value: false,
+      writable: true
     });
 
     Object.defineProperty(type, 'loose', {
       get: function get() {
         this._vueTypes_isLoose = true;
-        return this;
-      },
 
-      enumerable: false
+        return this;
+      }
     });
 
     return type;
   }
-};
-
-var typeDefaults = function typeDefaults() {
-  return {
-    func: noop,
-    bool: true,
-    string: '',
-    number: 0,
-    array: function array() {
-      return [];
+}, {
+  any: {
+    get: function get() {
+      return toType('any', {
+        type: null
+      });
     },
-    object: function object() {
-      return {};
+    configurable: true,
+    enumerable: true
+  },
+  func: {
+    get: function get() {
+      return toType('function', {
+        type: Function
+      }).def(currentDefaults.func);
     },
-    integer: 0
-  };
-};
-
-var currentDefaults = typeDefaults();
+    configurable: true,
+    enumerable: true
+  },
+  bool: {
+    get: function get() {
+      return toType('boolean', {
+        type: Boolean
+      }).def(currentDefaults.bool);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  string: {
+    get: function get() {
+      return toType('string', {
+        type: String
+      }).def(currentDefaults.string);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  number: {
+    get: function get() {
+      return toType('number', {
+        type: Number
+      }).def(currentDefaults.number);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  array: {
+    get: function get() {
+      return toType('array', {
+        type: Array
+      }).def(currentDefaults.array);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  object: {
+    get: function get() {
+      return toType('object', {
+        type: Object
+      }).def(currentDefaults.object);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  integer: {
+    get: function get() {
+      return toType('integer', {
+        type: Number,
+        validator: function validator(value) {
+          return isInteger(value);
+        }
+      }).def(currentDefaults.integer);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  symbol: {
+    get: function get() {
+      return toType('symbol', {
+        type: null,
+        validator: function validator(value) {
+          return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'symbol';
+        }
+      });
+    },
+    configurable: true,
+    enumerable: true
+  }
+});
 
 Object.defineProperty(VuePropTypes, 'sensibleDefaults', {
-  enumerable: false,
   set: function set(value) {
     if (value === false) {
       currentDefaults = {};

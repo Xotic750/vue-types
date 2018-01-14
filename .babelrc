@@ -31,18 +31,19 @@
   "env": {
     "es": {
       "presets": [],
-      "plugins": [
-      ]
+      "plugins": []
     },
     "rollup": {
       "presets": [],
-      "plugins": [
-      ]
+      "plugins": []
     },
     "cjs": {
-      "presets": [],
-      "plugins": [
-      ]
+      "presets": [
+        ["env", {
+          "modules": "commonjs"
+        }],
+      ],
+      "plugins": []
     }
   }
 }

@@ -43,9 +43,13 @@ export default [
       file: 'umd/vue-types.js',
       ...baseOutputConfig,
     },
-    plugins: [replace({
-      'process.env.NODE_ENV': JSON.stringify('development'),
-    }), ...plugins, filesize()],
+    plugins: [
+      replace({
+        'process.env.NODE_ENV': JSON.stringify('development'),
+      }),
+      ...plugins,
+      filesize(),
+    ],
     banner,
   },
   {
@@ -54,18 +58,23 @@ export default [
       file: 'umd/vue-types.min.js',
       ...baseOutputConfig,
     },
-    plugins: [replace({
-      'process.env.NODE_ENV': JSON.stringify('production'),
-    }), ...plugins, uglify({
-      warnings: false,
-      mangle: true,
-      compress: {
-        pure_funcs: ['warn'],
-      },
-      output: {
-        comments: /^!/,
-      },
-    }), filesize()],
+    plugins: [
+      replace({
+        'process.env.NODE_ENV': JSON.stringify('production'),
+      }),
+      ...plugins,
+      uglify({
+        warnings: false,
+        mangle: true,
+        compress: {
+          pure_funcs: ['warn'],
+        },
+        output: {
+          comments: /^!/,
+        },
+      }),
+      filesize(),
+    ],
     banner,
   },
 ];

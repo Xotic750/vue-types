@@ -11,36 +11,1168 @@
 	(global.VueTypes = factory());
 }(this, (function () { 'use strict';
 
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+
+
+function unwrapExports (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+// 7.1.4 ToInteger
+var ceil = Math.ceil;
+var floor = Math.floor;
+var _toInteger = function (it) {
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+
+// 7.2.1 RequireObjectCoercible(argument)
+var _defined = function (it) {
+  if (it == undefined) throw TypeError("Can't call method on  " + it);
+  return it;
+};
+
+// true  -> String#at
+// false -> String#codePointAt
+var _stringAt = function (TO_STRING) {
+  return function (that, pos) {
+    var s = String(_defined(that));
+    var i = _toInteger(pos);
+    var l = s.length;
+    var a, b;
+    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
+    a = s.charCodeAt(i);
+    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff
+      ? TO_STRING ? s.charAt(i) : a
+      : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
+  };
+};
+
+var _library = true;
+
+var _global = createCommonjsModule(function (module) {
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+var global = module.exports = typeof window != 'undefined' && window.Math == Math
+  ? window : typeof self != 'undefined' && self.Math == Math ? self
+  // eslint-disable-next-line no-new-func
+  : Function('return this')();
+if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
+});
+
+var _core = createCommonjsModule(function (module) {
+var core = module.exports = { version: '2.5.3' };
+if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
+});
+
+var _core_1 = _core.version;
+
+var _aFunction = function (it) {
+  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
+  return it;
+};
+
+// optional / simple context binding
+
+var _ctx = function (fn, that, length) {
+  _aFunction(fn);
+  if (that === undefined) return fn;
+  switch (length) {
+    case 1: return function (a) {
+      return fn.call(that, a);
+    };
+    case 2: return function (a, b) {
+      return fn.call(that, a, b);
+    };
+    case 3: return function (a, b, c) {
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function (/* ...args */) {
+    return fn.apply(that, arguments);
+  };
+};
+
+var _isObject = function (it) {
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+var _anObject = function (it) {
+  if (!_isObject(it)) throw TypeError(it + ' is not an object!');
+  return it;
+};
+
+var _fails = function (exec) {
+  try {
+    return !!exec();
+  } catch (e) {
+    return true;
+  }
+};
+
+// Thank's IE8 for his funny defineProperty
+var _descriptors = !_fails(function () {
+  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+});
+
+var document = _global.document;
+// typeof document.createElement is 'object' in old IE
+var is = _isObject(document) && _isObject(document.createElement);
+var _domCreate = function (it) {
+  return is ? document.createElement(it) : {};
+};
+
+var _ie8DomDefine = !_descriptors && !_fails(function () {
+  return Object.defineProperty(_domCreate('div'), 'a', { get: function () { return 7; } }).a != 7;
+});
+
+// 7.1.1 ToPrimitive(input [, PreferredType])
+
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+var _toPrimitive = function (it, S) {
+  if (!_isObject(it)) return it;
+  var fn, val;
+  if (S && typeof (fn = it.toString) == 'function' && !_isObject(val = fn.call(it))) return val;
+  if (typeof (fn = it.valueOf) == 'function' && !_isObject(val = fn.call(it))) return val;
+  if (!S && typeof (fn = it.toString) == 'function' && !_isObject(val = fn.call(it))) return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+var dP = Object.defineProperty;
+
+var f = _descriptors ? Object.defineProperty : function defineProperty(O, P, Attributes) {
+  _anObject(O);
+  P = _toPrimitive(P, true);
+  _anObject(Attributes);
+  if (_ie8DomDefine) try {
+    return dP(O, P, Attributes);
+  } catch (e) { /* empty */ }
+  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported!');
+  if ('value' in Attributes) O[P] = Attributes.value;
+  return O;
+};
+
+var _objectDp = {
+	f: f
+};
+
+var _propertyDesc = function (bitmap, value) {
+  return {
+    enumerable: !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable: !(bitmap & 4),
+    value: value
+  };
+};
+
+var _hide = _descriptors ? function (object, key, value) {
+  return _objectDp.f(object, key, _propertyDesc(1, value));
+} : function (object, key, value) {
+  object[key] = value;
+  return object;
+};
+
+var PROTOTYPE = 'prototype';
+
+var $export = function (type, name, source) {
+  var IS_FORCED = type & $export.F;
+  var IS_GLOBAL = type & $export.G;
+  var IS_STATIC = type & $export.S;
+  var IS_PROTO = type & $export.P;
+  var IS_BIND = type & $export.B;
+  var IS_WRAP = type & $export.W;
+  var exports = IS_GLOBAL ? _core : _core[name] || (_core[name] = {});
+  var expProto = exports[PROTOTYPE];
+  var target = IS_GLOBAL ? _global : IS_STATIC ? _global[name] : (_global[name] || {})[PROTOTYPE];
+  var key, own, out;
+  if (IS_GLOBAL) source = name;
+  for (key in source) {
+    // contains in native
+    own = !IS_FORCED && target && target[key] !== undefined;
+    if (own && key in exports) continue;
+    // export native or passed
+    out = own ? target[key] : source[key];
+    // prevent global pollution for namespaces
+    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
+    // bind timers to global for call from export context
+    : IS_BIND && own ? _ctx(out, _global)
+    // wrap global constructors for prevent change them in library
+    : IS_WRAP && target[key] == out ? (function (C) {
+      var F = function (a, b, c) {
+        if (this instanceof C) {
+          switch (arguments.length) {
+            case 0: return new C();
+            case 1: return new C(a);
+            case 2: return new C(a, b);
+          } return new C(a, b, c);
+        } return C.apply(this, arguments);
+      };
+      F[PROTOTYPE] = C[PROTOTYPE];
+      return F;
+    // make static versions for prototype methods
+    })(out) : IS_PROTO && typeof out == 'function' ? _ctx(Function.call, out) : out;
+    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
+    if (IS_PROTO) {
+      (exports.virtual || (exports.virtual = {}))[key] = out;
+      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
+      if (type & $export.R && expProto && !expProto[key]) _hide(expProto, key, out);
+    }
+  }
+};
+// type bitmap
+$export.F = 1;   // forced
+$export.G = 2;   // global
+$export.S = 4;   // static
+$export.P = 8;   // proto
+$export.B = 16;  // bind
+$export.W = 32;  // wrap
+$export.U = 64;  // safe
+$export.R = 128; // real proto method for `library`
+var _export = $export;
+
+var _redefine = _hide;
+
+var hasOwnProperty = {}.hasOwnProperty;
+var _has = function (it, key) {
+  return hasOwnProperty.call(it, key);
+};
+
+var toString$1 = {}.toString;
+
+var _cof = function (it) {
+  return toString$1.call(it).slice(8, -1);
+};
+
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+
+// eslint-disable-next-line no-prototype-builtins
+var _iobject = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
+  return _cof(it) == 'String' ? it.split('') : Object(it);
+};
+
+// to indexed object, toObject with fallback for non-array-like ES3 strings
+
+
+var _toIobject = function (it) {
+  return _iobject(_defined(it));
+};
+
+// 7.1.15 ToLength
+
+var min = Math.min;
+var _toLength = function (it) {
+  return it > 0 ? min(_toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
+};
+
+var max = Math.max;
+var min$1 = Math.min;
+var _toAbsoluteIndex = function (index, length) {
+  index = _toInteger(index);
+  return index < 0 ? max(index + length, 0) : min$1(index, length);
+};
+
+// false -> Array#indexOf
+// true  -> Array#includes
+
+
+
+var _arrayIncludes = function (IS_INCLUDES) {
+  return function ($this, el, fromIndex) {
+    var O = _toIobject($this);
+    var length = _toLength(O.length);
+    var index = _toAbsoluteIndex(fromIndex, length);
+    var value;
+    // Array#includes uses SameValueZero equality algorithm
+    // eslint-disable-next-line no-self-compare
+    if (IS_INCLUDES && el != el) while (length > index) {
+      value = O[index++];
+      // eslint-disable-next-line no-self-compare
+      if (value != value) return true;
+    // Array#indexOf ignores holes, Array#includes - not
+    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
+      if (O[index] === el) return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
+
+var SHARED = '__core-js_shared__';
+var store = _global[SHARED] || (_global[SHARED] = {});
+var _shared = function (key) {
+  return store[key] || (store[key] = {});
+};
+
+var id = 0;
+var px = Math.random();
+var _uid = function (key) {
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+};
+
+var shared$1 = _shared('keys');
+
+var _sharedKey = function (key) {
+  return shared$1[key] || (shared$1[key] = _uid(key));
+};
+
+var arrayIndexOf = _arrayIncludes(false);
+var IE_PROTO = _sharedKey('IE_PROTO');
+
+var _objectKeysInternal = function (object, names) {
+  var O = _toIobject(object);
+  var i = 0;
+  var result = [];
+  var key;
+  for (key in O) if (key != IE_PROTO) _has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while (names.length > i) if (_has(O, key = names[i++])) {
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+
+// IE 8- don't enum bug keys
+var _enumBugKeys = (
+  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
+).split(',');
+
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+
+
+
+var _objectKeys = Object.keys || function keys(O) {
+  return _objectKeysInternal(O, _enumBugKeys);
+};
+
+var _objectDps = _descriptors ? Object.defineProperties : function defineProperties(O, Properties) {
+  _anObject(O);
+  var keys = _objectKeys(Properties);
+  var length = keys.length;
+  var i = 0;
+  var P;
+  while (length > i) _objectDp.f(O, P = keys[i++], Properties[P]);
+  return O;
+};
+
+var document$1 = _global.document;
+var _html = document$1 && document$1.documentElement;
+
+// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
+
+
+
+var IE_PROTO$1 = _sharedKey('IE_PROTO');
+var Empty = function () { /* empty */ };
+var PROTOTYPE$1 = 'prototype';
+
+// Create object with fake `null` prototype: use iframe Object with cleared prototype
+var createDict = function () {
+  // Thrash, waste and sodomy: IE GC bug
+  var iframe = _domCreate('iframe');
+  var i = _enumBugKeys.length;
+  var lt = '<';
+  var gt = '>';
+  var iframeDocument;
+  iframe.style.display = 'none';
+  _html.appendChild(iframe);
+  iframe.src = 'javascript:'; // eslint-disable-line no-script-url
+  // createDict = iframe.contentWindow.Object;
+  // html.removeChild(iframe);
+  iframeDocument = iframe.contentWindow.document;
+  iframeDocument.open();
+  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
+  iframeDocument.close();
+  createDict = iframeDocument.F;
+  while (i--) delete createDict[PROTOTYPE$1][_enumBugKeys[i]];
+  return createDict();
+};
+
+var _objectCreate = Object.create || function create(O, Properties) {
+  var result;
+  if (O !== null) {
+    Empty[PROTOTYPE$1] = _anObject(O);
+    result = new Empty();
+    Empty[PROTOTYPE$1] = null;
+    // add "__proto__" for Object.getPrototypeOf polyfill
+    result[IE_PROTO$1] = O;
+  } else result = createDict();
+  return Properties === undefined ? result : _objectDps(result, Properties);
+};
+
+var _wks = createCommonjsModule(function (module) {
+var store = _shared('wks');
+
+var Symbol = _global.Symbol;
+var USE_SYMBOL = typeof Symbol == 'function';
+
+var $exports = module.exports = function (name) {
+  return store[name] || (store[name] =
+    USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : _uid)('Symbol.' + name));
+};
+
+$exports.store = store;
+});
+
+var def = _objectDp.f;
+
+var TAG = _wks('toStringTag');
+
+var _setToStringTag = function (it, tag, stat) {
+  if (it && !_has(it = stat ? it : it.prototype, TAG)) def(it, TAG, { configurable: true, value: tag });
+};
+
+var IteratorPrototype = {};
+
+// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
+_hide(IteratorPrototype, _wks('iterator'), function () { return this; });
+
+var _iterCreate = function (Constructor, NAME, next) {
+  Constructor.prototype = _objectCreate(IteratorPrototype, { next: _propertyDesc(1, next) });
+  _setToStringTag(Constructor, NAME + ' Iterator');
+};
+
+// 7.1.13 ToObject(argument)
+
+var _toObject = function (it) {
+  return Object(_defined(it));
+};
+
+// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
+
+
+var IE_PROTO$2 = _sharedKey('IE_PROTO');
+var ObjectProto = Object.prototype;
+
+var _objectGpo = Object.getPrototypeOf || function (O) {
+  O = _toObject(O);
+  if (_has(O, IE_PROTO$2)) return O[IE_PROTO$2];
+  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
+    return O.constructor.prototype;
+  } return O instanceof Object ? ObjectProto : null;
+};
+
+var ITERATOR = _wks('iterator');
+var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
+var FF_ITERATOR = '@@iterator';
+var KEYS = 'keys';
+var VALUES = 'values';
+
+var returnThis = function () { return this; };
+
+var _iterDefine = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED) {
+  _iterCreate(Constructor, NAME, next);
+  var getMethod = function (kind) {
+    if (!BUGGY && kind in proto) return proto[kind];
+    switch (kind) {
+      case KEYS: return function keys() { return new Constructor(this, kind); };
+      case VALUES: return function values() { return new Constructor(this, kind); };
+    } return function entries() { return new Constructor(this, kind); };
+  };
+  var TAG = NAME + ' Iterator';
+  var DEF_VALUES = DEFAULT == VALUES;
+  var VALUES_BUG = false;
+  var proto = Base.prototype;
+  var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
+  var $default = (!BUGGY && $native) || getMethod(DEFAULT);
+  var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
+  var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
+  var methods, key, IteratorPrototype;
+  // Fix native
+  if ($anyNative) {
+    IteratorPrototype = _objectGpo($anyNative.call(new Base()));
+    if (IteratorPrototype !== Object.prototype && IteratorPrototype.next) {
+      // Set @@toStringTag to native iterators
+      _setToStringTag(IteratorPrototype, TAG, true);
+      // fix for some old engines
+      if (!_library && !_has(IteratorPrototype, ITERATOR)) _hide(IteratorPrototype, ITERATOR, returnThis);
+    }
+  }
+  // fix Array#{values, @@iterator}.name in V8 / FF
+  if (DEF_VALUES && $native && $native.name !== VALUES) {
+    VALUES_BUG = true;
+    $default = function values() { return $native.call(this); };
+  }
+  // Define iterator
+  if ((!_library || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
+    _hide(proto, ITERATOR, $default);
+  }
+  // Plug for library
+  if (DEFAULT) {
+    methods = {
+      values: DEF_VALUES ? $default : getMethod(VALUES),
+      keys: IS_SET ? $default : getMethod(KEYS),
+      entries: $entries
+    };
+    if (FORCED) for (key in methods) {
+      if (!(key in proto)) _redefine(proto, key, methods[key]);
+    } else _export(_export.P + _export.F * (BUGGY || VALUES_BUG), NAME, methods);
+  }
+  return methods;
+};
+
+var $at = _stringAt(true);
+
+// 21.1.3.27 String.prototype[@@iterator]()
+_iterDefine(String, 'String', function (iterated) {
+  this._t = String(iterated); // target
+  this._i = 0;                // next index
+// 21.1.5.2.1 %StringIteratorPrototype%.next()
+}, function () {
+  var O = this._t;
+  var index = this._i;
+  var point;
+  if (index >= O.length) return { value: undefined, done: true };
+  point = $at(O, index);
+  this._i += point.length;
+  return { value: point, done: false };
+});
+
+var _iterStep = function (done, value) {
+  return { value: value, done: !!done };
+};
+
+// 22.1.3.4 Array.prototype.entries()
+// 22.1.3.13 Array.prototype.keys()
+// 22.1.3.29 Array.prototype.values()
+// 22.1.3.30 Array.prototype[@@iterator]()
+var es6_array_iterator = _iterDefine(Array, 'Array', function (iterated, kind) {
+  this._t = _toIobject(iterated); // target
+  this._i = 0;                   // next index
+  this._k = kind;                // kind
+// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
+}, function () {
+  var O = this._t;
+  var kind = this._k;
+  var index = this._i++;
+  if (!O || index >= O.length) {
+    this._t = undefined;
+    return _iterStep(1);
+  }
+  if (kind == 'keys') return _iterStep(0, index);
+  if (kind == 'values') return _iterStep(0, O[index]);
+  return _iterStep(0, [index, O[index]]);
+}, 'values');
+
+var TO_STRING_TAG = _wks('toStringTag');
+
+var DOMIterables = ('CSSRuleList,CSSStyleDeclaration,CSSValueList,ClientRectList,DOMRectList,DOMStringList,' +
+  'DOMTokenList,DataTransferItemList,FileList,HTMLAllCollection,HTMLCollection,HTMLFormElement,HTMLSelectElement,' +
+  'MediaList,MimeTypeArray,NamedNodeMap,NodeList,PaintRequestList,Plugin,PluginArray,SVGLengthList,SVGNumberList,' +
+  'SVGPathSegList,SVGPointList,SVGStringList,SVGTransformList,SourceBufferList,StyleSheetList,TextTrackCueList,' +
+  'TextTrackList,TouchList').split(',');
+
+for (var i = 0; i < DOMIterables.length; i++) {
+  var NAME = DOMIterables[i];
+  var Collection = _global[NAME];
+  var proto = Collection && Collection.prototype;
+  if (proto && !proto[TO_STRING_TAG]) _hide(proto, TO_STRING_TAG, NAME);
+  
+}
+
+var f$1 = _wks;
+
+var _wksExt = {
+	f: f$1
+};
+
+var iterator = _wksExt.f('iterator');
+
+var iterator$2 = createCommonjsModule(function (module) {
+module.exports = { "default": iterator, __esModule: true };
+});
+
+unwrapExports(iterator$2);
+
+var _meta = createCommonjsModule(function (module) {
+var META = _uid('meta');
+
+
+var setDesc = _objectDp.f;
+var id = 0;
+var isExtensible = Object.isExtensible || function () {
+  return true;
+};
+var FREEZE = !_fails(function () {
+  return isExtensible(Object.preventExtensions({}));
+});
+var setMeta = function (it) {
+  setDesc(it, META, { value: {
+    i: 'O' + ++id, // object ID
+    w: {}          // weak collections IDs
+  } });
+};
+var fastKey = function (it, create) {
+  // return primitive with prefix
+  if (!_isObject(it)) return typeof it == 'symbol' ? it : (typeof it == 'string' ? 'S' : 'P') + it;
+  if (!_has(it, META)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return 'F';
+    // not necessary to add metadata
+    if (!create) return 'E';
+    // add missing metadata
+    setMeta(it);
+  // return object ID
+  } return it[META].i;
+};
+var getWeak = function (it, create) {
+  if (!_has(it, META)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return true;
+    // not necessary to add metadata
+    if (!create) return false;
+    // add missing metadata
+    setMeta(it);
+  // return hash weak collections IDs
+  } return it[META].w;
+};
+// add metadata on freeze-family methods calling
+var onFreeze = function (it) {
+  if (FREEZE && meta.NEED && isExtensible(it) && !_has(it, META)) setMeta(it);
+  return it;
+};
+var meta = module.exports = {
+  KEY: META,
+  NEED: false,
+  fastKey: fastKey,
+  getWeak: getWeak,
+  onFreeze: onFreeze
+};
+});
+
+var _meta_1 = _meta.KEY;
+var _meta_2 = _meta.NEED;
+var _meta_3 = _meta.fastKey;
+var _meta_4 = _meta.getWeak;
+var _meta_5 = _meta.onFreeze;
+
+var defineProperty = _objectDp.f;
+var _wksDefine = function (name) {
+  var $Symbol = _core.Symbol || (_core.Symbol = _library ? {} : _global.Symbol || {});
+  if (name.charAt(0) != '_' && !(name in $Symbol)) defineProperty($Symbol, name, { value: _wksExt.f(name) });
+};
+
+var f$2 = Object.getOwnPropertySymbols;
+
+var _objectGops = {
+	f: f$2
+};
+
+var f$3 = {}.propertyIsEnumerable;
+
+var _objectPie = {
+	f: f$3
+};
+
+// all enumerable object keys, includes symbols
+
+
+
+var _enumKeys = function (it) {
+  var result = _objectKeys(it);
+  var getSymbols = _objectGops.f;
+  if (getSymbols) {
+    var symbols = getSymbols(it);
+    var isEnum = _objectPie.f;
+    var i = 0;
+    var key;
+    while (symbols.length > i) if (isEnum.call(it, key = symbols[i++])) result.push(key);
+  } return result;
+};
+
+// 7.2.2 IsArray(argument)
+
+var _isArray = Array.isArray || function isArray(arg) {
+  return _cof(arg) == 'Array';
+};
+
+// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+
+var hiddenKeys = _enumBugKeys.concat('length', 'prototype');
+
+var f$4 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+  return _objectKeysInternal(O, hiddenKeys);
+};
+
+var _objectGopn = {
+	f: f$4
+};
+
+// fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
+
+var gOPN = _objectGopn.f;
+var toString$2 = {}.toString;
+
+var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames
+  ? Object.getOwnPropertyNames(window) : [];
+
+var getWindowNames = function (it) {
+  try {
+    return gOPN(it);
+  } catch (e) {
+    return windowNames.slice();
+  }
+};
+
+var f$5 = function getOwnPropertyNames(it) {
+  return windowNames && toString$2.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(_toIobject(it));
+};
+
+var _objectGopnExt = {
+	f: f$5
+};
+
+var gOPD = Object.getOwnPropertyDescriptor;
+
+var f$6 = _descriptors ? gOPD : function getOwnPropertyDescriptor(O, P) {
+  O = _toIobject(O);
+  P = _toPrimitive(P, true);
+  if (_ie8DomDefine) try {
+    return gOPD(O, P);
+  } catch (e) { /* empty */ }
+  if (_has(O, P)) return _propertyDesc(!_objectPie.f.call(O, P), O[P]);
+};
+
+var _objectGopd = {
+	f: f$6
+};
+
+// ECMAScript 6 symbols shim
+
+
+
+
+
+var META = _meta.KEY;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var gOPD$2 = _objectGopd.f;
+var dP$2 = _objectDp.f;
+var gOPN$1 = _objectGopnExt.f;
+var $Symbol = _global.Symbol;
+var $JSON = _global.JSON;
+var _stringify = $JSON && $JSON.stringify;
+var PROTOTYPE$2 = 'prototype';
+var HIDDEN = _wks('_hidden');
+var TO_PRIMITIVE = _wks('toPrimitive');
+var isEnum = {}.propertyIsEnumerable;
+var SymbolRegistry = _shared('symbol-registry');
+var AllSymbols = _shared('symbols');
+var OPSymbols = _shared('op-symbols');
+var ObjectProto$1 = Object[PROTOTYPE$2];
+var USE_NATIVE = typeof $Symbol == 'function';
+var QObject = _global.QObject;
+// Don't use setters in Qt Script, https://github.com/zloirock/core-js/issues/173
+var setter = !QObject || !QObject[PROTOTYPE$2] || !QObject[PROTOTYPE$2].findChild;
+
+// fallback for old Android, https://code.google.com/p/v8/issues/detail?id=687
+var setSymbolDesc = _descriptors && _fails(function () {
+  return _objectCreate(dP$2({}, 'a', {
+    get: function () { return dP$2(this, 'a', { value: 7 }).a; }
+  })).a != 7;
+}) ? function (it, key, D) {
+  var protoDesc = gOPD$2(ObjectProto$1, key);
+  if (protoDesc) delete ObjectProto$1[key];
+  dP$2(it, key, D);
+  if (protoDesc && it !== ObjectProto$1) dP$2(ObjectProto$1, key, protoDesc);
+} : dP$2;
+
+var wrap = function (tag) {
+  var sym = AllSymbols[tag] = _objectCreate($Symbol[PROTOTYPE$2]);
+  sym._k = tag;
+  return sym;
+};
+
+var isSymbol = USE_NATIVE && typeof $Symbol.iterator == 'symbol' ? function (it) {
+  return typeof it == 'symbol';
+} : function (it) {
+  return it instanceof $Symbol;
+};
+
+var $defineProperty = function defineProperty(it, key, D) {
+  if (it === ObjectProto$1) $defineProperty(OPSymbols, key, D);
+  _anObject(it);
+  key = _toPrimitive(key, true);
+  _anObject(D);
+  if (_has(AllSymbols, key)) {
+    if (!D.enumerable) {
+      if (!_has(it, HIDDEN)) dP$2(it, HIDDEN, _propertyDesc(1, {}));
+      it[HIDDEN][key] = true;
+    } else {
+      if (_has(it, HIDDEN) && it[HIDDEN][key]) it[HIDDEN][key] = false;
+      D = _objectCreate(D, { enumerable: _propertyDesc(0, false) });
+    } return setSymbolDesc(it, key, D);
+  } return dP$2(it, key, D);
+};
+var $defineProperties = function defineProperties(it, P) {
+  _anObject(it);
+  var keys = _enumKeys(P = _toIobject(P));
+  var i = 0;
+  var l = keys.length;
+  var key;
+  while (l > i) $defineProperty(it, key = keys[i++], P[key]);
+  return it;
+};
+var $create = function create(it, P) {
+  return P === undefined ? _objectCreate(it) : $defineProperties(_objectCreate(it), P);
+};
+var $propertyIsEnumerable = function propertyIsEnumerable(key) {
+  var E = isEnum.call(this, key = _toPrimitive(key, true));
+  if (this === ObjectProto$1 && _has(AllSymbols, key) && !_has(OPSymbols, key)) return false;
+  return E || !_has(this, key) || !_has(AllSymbols, key) || _has(this, HIDDEN) && this[HIDDEN][key] ? E : true;
+};
+var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key) {
+  it = _toIobject(it);
+  key = _toPrimitive(key, true);
+  if (it === ObjectProto$1 && _has(AllSymbols, key) && !_has(OPSymbols, key)) return;
+  var D = gOPD$2(it, key);
+  if (D && _has(AllSymbols, key) && !(_has(it, HIDDEN) && it[HIDDEN][key])) D.enumerable = true;
+  return D;
+};
+var $getOwnPropertyNames = function getOwnPropertyNames(it) {
+  var names = gOPN$1(_toIobject(it));
+  var result = [];
+  var i = 0;
+  var key;
+  while (names.length > i) {
+    if (!_has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META) result.push(key);
+  } return result;
+};
+var $getOwnPropertySymbols = function getOwnPropertySymbols(it) {
+  var IS_OP = it === ObjectProto$1;
+  var names = gOPN$1(IS_OP ? OPSymbols : _toIobject(it));
+  var result = [];
+  var i = 0;
+  var key;
+  while (names.length > i) {
+    if (_has(AllSymbols, key = names[i++]) && (IS_OP ? _has(ObjectProto$1, key) : true)) result.push(AllSymbols[key]);
+  } return result;
+};
+
+// 19.4.1.1 Symbol([description])
+if (!USE_NATIVE) {
+  $Symbol = function Symbol() {
+    if (this instanceof $Symbol) throw TypeError('Symbol is not a constructor!');
+    var tag = _uid(arguments.length > 0 ? arguments[0] : undefined);
+    var $set = function (value) {
+      if (this === ObjectProto$1) $set.call(OPSymbols, value);
+      if (_has(this, HIDDEN) && _has(this[HIDDEN], tag)) this[HIDDEN][tag] = false;
+      setSymbolDesc(this, tag, _propertyDesc(1, value));
+    };
+    if (_descriptors && setter) setSymbolDesc(ObjectProto$1, tag, { configurable: true, set: $set });
+    return wrap(tag);
+  };
+  _redefine($Symbol[PROTOTYPE$2], 'toString', function toString() {
+    return this._k;
+  });
+
+  _objectGopd.f = $getOwnPropertyDescriptor;
+  _objectDp.f = $defineProperty;
+  _objectGopn.f = _objectGopnExt.f = $getOwnPropertyNames;
+  _objectPie.f = $propertyIsEnumerable;
+  _objectGops.f = $getOwnPropertySymbols;
+
+  if (_descriptors && !_library) {
+    _redefine(ObjectProto$1, 'propertyIsEnumerable', $propertyIsEnumerable, true);
+  }
+
+  _wksExt.f = function (name) {
+    return wrap(_wks(name));
+  };
+}
+
+_export(_export.G + _export.W + _export.F * !USE_NATIVE, { Symbol: $Symbol });
+
+for (var es6Symbols = (
+  // 19.4.2.2, 19.4.2.3, 19.4.2.4, 19.4.2.6, 19.4.2.8, 19.4.2.9, 19.4.2.10, 19.4.2.11, 19.4.2.12, 19.4.2.13, 19.4.2.14
+  'hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables'
+).split(','), j = 0; es6Symbols.length > j;)_wks(es6Symbols[j++]);
+
+for (var wellKnownSymbols = _objectKeys(_wks.store), k = 0; wellKnownSymbols.length > k;) _wksDefine(wellKnownSymbols[k++]);
+
+_export(_export.S + _export.F * !USE_NATIVE, 'Symbol', {
+  // 19.4.2.1 Symbol.for(key)
+  'for': function (key) {
+    return _has(SymbolRegistry, key += '')
+      ? SymbolRegistry[key]
+      : SymbolRegistry[key] = $Symbol(key);
+  },
+  // 19.4.2.5 Symbol.keyFor(sym)
+  keyFor: function keyFor(sym) {
+    if (!isSymbol(sym)) throw TypeError(sym + ' is not a symbol!');
+    for (var key in SymbolRegistry) if (SymbolRegistry[key] === sym) return key;
+  },
+  useSetter: function () { setter = true; },
+  useSimple: function () { setter = false; }
+});
+
+_export(_export.S + _export.F * !USE_NATIVE, 'Object', {
+  // 19.1.2.2 Object.create(O [, Properties])
+  create: $create,
+  // 19.1.2.4 Object.defineProperty(O, P, Attributes)
+  defineProperty: $defineProperty,
+  // 19.1.2.3 Object.defineProperties(O, Properties)
+  defineProperties: $defineProperties,
+  // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
+  getOwnPropertyDescriptor: $getOwnPropertyDescriptor,
+  // 19.1.2.7 Object.getOwnPropertyNames(O)
+  getOwnPropertyNames: $getOwnPropertyNames,
+  // 19.1.2.8 Object.getOwnPropertySymbols(O)
+  getOwnPropertySymbols: $getOwnPropertySymbols
+});
+
+// 24.3.2 JSON.stringify(value [, replacer [, space]])
+$JSON && _export(_export.S + _export.F * (!USE_NATIVE || _fails(function () {
+  var S = $Symbol();
+  // MS Edge converts symbol values to JSON as {}
+  // WebKit converts symbol values to JSON as null
+  // V8 throws on boxed symbols
+  return _stringify([S]) != '[null]' || _stringify({ a: S }) != '{}' || _stringify(Object(S)) != '{}';
+})), 'JSON', {
+  stringify: function stringify(it) {
+    var args = [it];
+    var i = 1;
+    var replacer, $replacer;
+    while (arguments.length > i) args.push(arguments[i++]);
+    $replacer = replacer = args[1];
+    if (!_isObject(replacer) && it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
+    if (!_isArray(replacer)) replacer = function (key, value) {
+      if (typeof $replacer == 'function') value = $replacer.call(this, key, value);
+      if (!isSymbol(value)) return value;
+    };
+    args[1] = replacer;
+    return _stringify.apply($JSON, args);
+  }
+});
+
+// 19.4.3.4 Symbol.prototype[@@toPrimitive](hint)
+$Symbol[PROTOTYPE$2][TO_PRIMITIVE] || _hide($Symbol[PROTOTYPE$2], TO_PRIMITIVE, $Symbol[PROTOTYPE$2].valueOf);
+// 19.4.3.5 Symbol.prototype[@@toStringTag]
+_setToStringTag($Symbol, 'Symbol');
+// 20.2.1.9 Math[@@toStringTag]
+_setToStringTag(Math, 'Math', true);
+// 24.3.3 JSON[@@toStringTag]
+_setToStringTag(_global.JSON, 'JSON', true);
+
+_wksDefine('asyncIterator');
+
+_wksDefine('observable');
+
+var symbol = _core.Symbol;
+
+var symbol$2 = createCommonjsModule(function (module) {
+module.exports = { "default": symbol, __esModule: true };
+});
+
+unwrapExports(symbol$2);
+
+var _typeof_1 = createCommonjsModule(function (module, exports) {
+exports.__esModule = true;
+
+
+
+var _iterator2 = _interopRequireDefault(iterator$2);
+
+
+
+var _symbol2 = _interopRequireDefault(symbol$2);
+
+var _typeof = typeof _symbol2.default === "function" && typeof _iterator2.default === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2.default === "function" && obj.constructor === _symbol2.default && obj !== _symbol2.default.prototype ? "symbol" : typeof obj; };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = typeof _symbol2.default === "function" && _typeof(_iterator2.default) === "symbol" ? function (obj) {
+  return typeof obj === "undefined" ? "undefined" : _typeof(obj);
+} : function (obj) {
+  return obj && typeof _symbol2.default === "function" && obj.constructor === _symbol2.default && obj !== _symbol2.default.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof(obj);
+};
+});
+
+var _typeof = unwrapExports(_typeof_1);
+
+// most Object methods by ES6 should accept primitives
+
+
+
+var _objectSap = function (KEY, exec) {
+  var fn = (_core.Object || {})[KEY] || Object[KEY];
+  var exp = {};
+  exp[KEY] = exec(fn);
+  _export(_export.S + _export.F * _fails(function () { fn(1); }), 'Object', exp);
+};
+
+// 19.1.2.14 Object.keys(O)
+
+
+
+_objectSap('keys', function () {
+  return function keys(it) {
+    return _objectKeys(_toObject(it));
+  };
+});
+
+var keys = _core.Object.keys;
+
+var keys$2 = createCommonjsModule(function (module) {
+module.exports = { "default": keys, __esModule: true };
+});
+
+var _Object$keys = unwrapExports(keys$2);
+
+// 19.1.2.3 / 15.2.3.7 Object.defineProperties(O, Properties)
+_export(_export.S + _export.F * !_descriptors, 'Object', { defineProperties: _objectDps });
+
+var $Object = _core.Object;
+var defineProperties = function defineProperties(T, D) {
+  return $Object.defineProperties(T, D);
+};
+
+var defineProperties$2 = createCommonjsModule(function (module) {
+module.exports = { "default": defineProperties, __esModule: true };
+});
+
+var _Object$defineProperties = unwrapExports(defineProperties$2);
+
+var newArrowCheck = createCommonjsModule(function (module, exports) {
+exports.__esModule = true;
+
+exports.default = function (innerThis, boundThis) {
+  if (innerThis !== boundThis) {
+    throw new TypeError("Cannot instantiate an arrow function");
+  }
+};
+});
+
+var _newArrowCheck = unwrapExports(newArrowCheck);
+
+/** Detect free variable `global` from Node.js. */
+var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
+
+var _freeGlobal = freeGlobal;
+
+/** Detect free variable `self`. */
+var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root = _freeGlobal || freeSelf || Function('return this')();
+
+var _root = root;
+
+/** Built-in value references. */
+var Symbol = _root.Symbol;
+
+var _Symbol = Symbol;
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$1 = objectProto.hasOwnProperty;
+
 /**
- * lodash (Custom Build) <https://lodash.com/>
- * Build: `lodash modularize exports="npm" -o ./`
- * Copyright jQuery Foundation and other contributors <https://jquery.org/>
- * Released under MIT license <https://lodash.com/license>
- * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
- * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
  */
+var nativeObjectToString = objectProto.toString;
 
-/** `Object#toString` result references. */
-var objectTag = '[object Object]';
+/** Built-in value references. */
+var symToStringTag = _Symbol ? _Symbol.toStringTag : undefined;
 
 /**
- * Checks if `value` is a host object in IE < 9.
+ * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
  *
  * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a host object, else `false`.
+ * @param {*} value The value to query.
+ * @returns {string} Returns the raw `toStringTag`.
  */
-function isHostObject(value) {
-  // Many host objects are `Object` objects that can coerce to strings
-  // despite having improperly defined `toString` methods.
-  var result = false;
-  if (value != null && typeof value.toString != 'function') {
-    try {
-      result = !!(value + '');
-    } catch (e) {}
+function getRawTag(value) {
+  var isOwn = hasOwnProperty$1.call(value, symToStringTag),
+      tag = value[symToStringTag];
+
+  try {
+    value[symToStringTag] = undefined;
+    var unmasked = true;
+  } catch (e) {}
+
+  var result = nativeObjectToString.call(value);
+  if (unmasked) {
+    if (isOwn) {
+      value[symToStringTag] = tag;
+    } else {
+      delete value[symToStringTag];
+    }
   }
   return result;
 }
+
+var _getRawTag = getRawTag;
+
+/** Used for built-in method references. */
+var objectProto$1 = Object.prototype;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString$1 = objectProto$1.toString;
+
+/**
+ * Converts `value` to a string using `Object.prototype.toString`.
+ *
+ * @private
+ * @param {*} value The value to convert.
+ * @returns {string} Returns the converted string.
+ */
+function objectToString(value) {
+  return nativeObjectToString$1.call(value);
+}
+
+var _objectToString = objectToString;
+
+/** `Object#toString` result references. */
+var nullTag = '[object Null]';
+var undefinedTag = '[object Undefined]';
+
+/** Built-in value references. */
+var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
+
+/**
+ * The base implementation of `getTag` without fallbacks for buggy environments.
+ *
+ * @private
+ * @param {*} value The value to query.
+ * @returns {string} Returns the `toStringTag`.
+ */
+function baseGetTag(value) {
+  if (value == null) {
+    return value === undefined ? undefinedTag : nullTag;
+  }
+  return (symToStringTag$1 && symToStringTag$1 in Object(value))
+    ? _getRawTag(value)
+    : _objectToString(value);
+}
+
+var _baseGetTag = baseGetTag;
 
 /**
  * Creates a unary function that invokes `func` with its argument transformed.
@@ -56,28 +1188,12 @@ function overArg(func, transform) {
   };
 }
 
-/** Used for built-in method references. */
-var funcProto = Function.prototype;
-var objectProto = Object.prototype;
-
-/** Used to resolve the decompiled source of functions. */
-var funcToString = funcProto.toString;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/** Used to infer the `Object` constructor. */
-var objectCtorString = funcToString.call(Object);
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objectToString = objectProto.toString;
+var _overArg = overArg;
 
 /** Built-in value references. */
-var getPrototype = overArg(Object.getPrototypeOf, Object);
+var getPrototype = _overArg(Object.getPrototypeOf, Object);
+
+var _getPrototype = getPrototype;
 
 /**
  * Checks if `value` is object-like. A value is object-like if it's not `null`
@@ -104,8 +1220,26 @@ var getPrototype = overArg(Object.getPrototypeOf, Object);
  * // => false
  */
 function isObjectLike(value) {
-  return !!value && typeof value == 'object';
+  return value != null && typeof value == 'object';
 }
+
+var isObjectLike_1 = isObjectLike;
+
+/** `Object#toString` result references. */
+var objectTag = '[object Object]';
+
+/** Used for built-in method references. */
+var funcProto = Function.prototype;
+var objectProto$2 = Object.prototype;
+
+/** Used to resolve the decompiled source of functions. */
+var funcToString = funcProto.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$2 = objectProto$2.hasOwnProperty;
+
+/** Used to infer the `Object` constructor. */
+var objectCtorString = funcToString.call(Object);
 
 /**
  * Checks if `value` is a plain object, that is, an object created by the
@@ -136,62 +1270,230 @@ function isObjectLike(value) {
  * // => true
  */
 function isPlainObject(value) {
-  if (!isObjectLike(value) ||
-      objectToString.call(value) != objectTag || isHostObject(value)) {
+  if (!isObjectLike_1(value) || _baseGetTag(value) != objectTag) {
     return false;
   }
-  var proto = getPrototype(value);
+  var proto = _getPrototype(value);
   if (proto === null) {
     return true;
   }
-  var Ctor = hasOwnProperty.call(proto, 'constructor') && proto.constructor;
-  return (typeof Ctor == 'function' &&
-    Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString);
+  var Ctor = hasOwnProperty$2.call(proto, 'constructor') && proto.constructor;
+  return typeof Ctor == 'function' && Ctor instanceof Ctor &&
+    funcToString.call(Ctor) == objectCtorString;
 }
 
-var lodash_isplainobject = isPlainObject;
+var isPlainObject_1 = isPlainObject;
+
+/**
+ * This method returns `undefined`.
+ *
+ * @static
+ * @memberOf _
+ * @since 2.3.0
+ * @category Util
+ * @example
+ *
+ * _.times(2, _.noop);
+ * // => [undefined, undefined]
+ */
+function noop() {
+  // No operation performed.
+}
+
+var noop_1 = noop;
+
+/**
+ * Checks if `value` is `null` or `undefined`.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is nullish, else `false`.
+ * @example
+ *
+ * _.isNil(null);
+ * // => true
+ *
+ * _.isNil(void 0);
+ * // => true
+ *
+ * _.isNil(NaN);
+ * // => false
+ */
+function isNil(value) {
+  return value == null;
+}
+
+var isNil_1 = isNil;
+
+/**
+ * This method returns a new empty array.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.13.0
+ * @category Util
+ * @returns {Array} Returns the new empty array.
+ * @example
+ *
+ * var arrays = _.times(2, _.stubArray);
+ *
+ * console.log(arrays);
+ * // => [[], []]
+ *
+ * console.log(arrays[0] === arrays[1]);
+ * // => false
+ */
+function stubArray() {
+  return [];
+}
+
+var stubArray_1 = stubArray;
+
+/**
+ * This method returns a new empty object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.13.0
+ * @category Util
+ * @returns {Object} Returns the new empty object.
+ * @example
+ *
+ * var objects = _.times(2, _.stubObject);
+ *
+ * console.log(objects);
+ * // => [{}, {}]
+ *
+ * console.log(objects[0] === objects[1]);
+ * // => false
+ */
+function stubObject() {
+  return {};
+}
+
+var stubObject_1 = stubObject;
+
+// 26.1.13 Reflect.set(target, propertyKey, V [, receiver])
+
+
+
+
+
+
+
+
+
+function set(target, propertyKey, V /* , receiver */) {
+  var receiver = arguments.length < 4 ? target : arguments[3];
+  var ownDesc = _objectGopd.f(_anObject(target), propertyKey);
+  var existingDescriptor, proto;
+  if (!ownDesc) {
+    if (_isObject(proto = _objectGpo(target))) {
+      return set(proto, propertyKey, V, receiver);
+    }
+    ownDesc = _propertyDesc(0);
+  }
+  if (_has(ownDesc, 'value')) {
+    if (ownDesc.writable === false || !_isObject(receiver)) return false;
+    existingDescriptor = _objectGopd.f(receiver, propertyKey) || _propertyDesc(0);
+    existingDescriptor.value = V;
+    _objectDp.f(receiver, propertyKey, existingDescriptor);
+    return true;
+  }
+  return ownDesc.set === undefined ? false : (ownDesc.set.call(receiver, V), true);
+}
+
+_export(_export.S, 'Reflect', { set: set });
+
+var set$1 = _core.Reflect.set;
+
+var set$3 = createCommonjsModule(function (module) {
+module.exports = { "default": set$1, __esModule: true };
+});
+
+var _Reflect$set = unwrapExports(set$3);
+
+// 20.1.2.3 Number.isInteger(number)
+
+var floor$1 = Math.floor;
+var _isInteger = function isInteger(it) {
+  return !_isObject(it) && isFinite(it) && floor$1(it) === it;
+};
+
+// 20.1.2.3 Number.isInteger(number)
+
+
+_export(_export.S, 'Number', { isInteger: _isInteger });
+
+var isInteger = _core.Number.isInteger;
+
+var isInteger$2 = createCommonjsModule(function (module) {
+module.exports = { "default": isInteger, __esModule: true };
+});
+
+var _Number$isInteger = unwrapExports(isInteger$2);
+
+var _this = undefined;
 
 var ObjProto = Object.prototype;
-var toString = ObjProto.toString;
+var $toString = ObjProto.toString;
 var hasOwn = ObjProto.hasOwnProperty;
 
 var FN_MATCH_REGEXP = /^\s*function (\w+)/;
 
+var getFnType = function (fn) {
+  _newArrowCheck(this, _this);
+
+  return fn.type ? fn.type : fn;
+}.bind(undefined);
+
 // https://github.com/vuejs/vue/blob/dev/src/core/util/props.js#L159
-var getType = function getType(fn) {
-  var type = fn !== null && fn !== undefined ? fn.type ? fn.type : fn : null;
+var getType = function (fn) {
+  _newArrowCheck(this, _this);
+
+  var type = isNil_1(fn) ? null : getFnType(fn);
   var match = type && type.toString().match(FN_MATCH_REGEXP);
-  return match && match[1];
-};
 
-var getNativeType = function getNativeType(value) {
-  if (value === null || value === undefined) return null;
+  return match && match[1];
+}.bind(undefined);
+
+var getNativeType = function (value) {
+  _newArrowCheck(this, _this);
+
+  if (isNil_1(value)) {
+    return null;
+  }
+
   var match = value.constructor.toString().match(FN_MATCH_REGEXP);
+
   return match && match[1];
-};
+}.bind(undefined);
 
 /**
- * No-op function
- */
-var noop = function noop() {};
-
-/**
- * Checks for a own property in an object
+ * Checks for a own property in an object.
  *
- * @param {object} obj - Object
- * @param {string} prop - Property to check
+ * @param {Object} obj - Object.
+ * @param {string} prop - Property to check.
  */
+var has$1 = function (obj, prop) {
+  _newArrowCheck(this, _this);
 
+  return hasOwn.call(obj, prop);
+}.bind(undefined);
 
 /**
- * Determines whether the passed value is an integer. Uses `Number.isInteger` if available
+ * Determines whether the passed value is an integer.
+ * Uses `Number.isInteger` if available.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
  * @param {*} value - The value to be tested for being an integer.
  * @returns {boolean}
  */
-var isInteger = Number.isInteger || function (value) {
-  return typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
+var isInteger$3 = _Number$isInteger || function isInteger(value) {
+  return typeof value === 'number' && isFinite(value) && Math.floor(value) === value; // eslint-disable-line no-restricted-globals
 };
 
 /**
@@ -200,118 +1502,79 @@ var isInteger = Number.isInteger || function (value) {
  * @param {*} value - The value to be tested for being an array.
  * @returns {boolean}
  */
-var isArray = Array.isArray || function (value) {
+var isArray$1 = Array.isArray || function isArray(value) {
   return toString.call(value) === '[object Array]';
 };
 
 /**
- * Checks if a value is a function
+ * Checks if a value is a function.
  *
- * @param {any} value - Value to check
+ * @param {any} value - Value to check.
  * @returns {boolean}
  */
-var isFunction = function isFunction(value) {
-  return toString.call(value) === '[object Function]';
-};
+var isFunction = function (value) {
+  _newArrowCheck(this, _this);
 
-/**
- * Adds a `def` method to the object returning a new object with passed in argument as `default` property
- *
- * @param {object} type - Object to enhance
- */
-var withDefault = function withDefault(type) {
-  Object.defineProperty(type, 'def', {
-    value: function value(def) {
-      if (def === undefined && !this.default) {
-        return this;
-      }
-      if (!isFunction(def) && !validateType(this, def)) {
-        warn(this._vueTypes_name + ' - invalid default value: "' + def + '"', def);
-        return this;
-      }
-      this.default = isArray(def) || lodash_isplainobject(def) ? function () {
-        return def;
-      } : def;
-      return this;
-    },
+  return $toString.call(value) === '[object Function]';
+}.bind(undefined);
 
-    enumerable: false,
-    writable: false
-  });
-};
+var warn = function getWarn() {
+  var _this2 = this;
 
-/**
- * Adds a `isRequired` getter returning a new object with `required: true` key-value
- *
- * @param {object} type - Object to enhance
- */
-var withRequired = function withRequired(type) {
-  Object.defineProperty(type, 'isRequired', {
-    get: function get() {
-      this.required = true;
-      return this;
-    },
-
-    enumerable: false
-  });
-};
-
-/**
- * Adds `isRequired` and `def` modifiers to an object
- *
- * @param {string} name - Type internal name
- * @param {object} obj - Object to enhance
- * @returns {object}
- */
-var toType = function toType(name, obj) {
-  Object.defineProperty(obj, '_vueTypes_name', {
-    enumerable: false,
-    writable: false,
-    value: name
-  });
-  withRequired(obj);
-  withDefault(obj);
-
-  if (isFunction(obj.validator)) {
-    obj.validator = obj.validator.bind(obj);
+  if ("development" === 'production' || typeof console === 'undefined') {
+    return noop_1;
   }
-  return obj;
-};
+
+  return function (msg) {
+    _newArrowCheck(this, _this2);
+
+    return console.warn('[VueTypes warn]: ' + String(msg));
+  }.bind(this); // eslint-disable-line no-console
+}();
 
 /**
- * Validates a given value against a prop type object
+ * Validates a given value against a prop type object.
  *
- * @param {Object|*} type - Type to use for validation. Either a type object or a constructor
- * @param {*} value - Value to check
- * @param {boolean} silent - Silence warnings
+ * @param {Object|*} type - Type to use for validation. Either a type object or a constructor.
+ * @param {*} value - Value to check.
+ * @param {boolean} silent - Silence warnings.
  * @returns {boolean}
  */
-var validateType = function validateType(type, value) {
+var validateType = function (type, value) {
   var silent = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+  _newArrowCheck(this, _this);
 
   var typeToCheck = type;
   var valid = true;
   var expectedType = void 0;
-  if (!lodash_isplainobject(type)) {
-    typeToCheck = { type: type };
+  if (!isPlainObject_1(type)) {
+    typeToCheck = {
+      type: type
+    };
   }
-  var namePrefix = typeToCheck._vueTypes_name ? typeToCheck._vueTypes_name + ' - ' : '';
+
+  var namePrefix = typeToCheck._vueTypes_name ? String(typeToCheck._vueTypes_name) + ' - ' : '';
 
   if (hasOwn.call(typeToCheck, 'type') && typeToCheck.type !== null) {
-    if (isArray(typeToCheck.type)) {
-      valid = typeToCheck.type.some(function (type) {
-        return validateType(type, value, true);
-      });
-      expectedType = typeToCheck.type.map(function (type) {
-        return getType(type);
-      }).join(' or ');
+    if (isArray$1(typeToCheck.type)) {
+      valid = typeToCheck.type.some(function (T) {
+        _newArrowCheck(this, _this);
+
+        return validateType(T, value, true);
+      }.bind(this));
+      expectedType = typeToCheck.type.map(function (T) {
+        _newArrowCheck(this, _this);
+
+        return getType(T);
+      }.bind(this)).join(' or ');
     } else {
       expectedType = getType(typeToCheck);
 
       if (expectedType === 'Array') {
-        valid = isArray(value);
+        valid = isArray$1(value);
       } else if (expectedType === 'Object') {
-        valid = lodash_isplainobject(value);
+        valid = isPlainObject_1(value);
       } else if (expectedType === 'String' || expectedType === 'Number' || expectedType === 'Boolean' || expectedType === 'Function') {
         valid = getNativeType(value) === expectedType;
       } else {
@@ -321,97 +1584,110 @@ var validateType = function validateType(type, value) {
   }
 
   if (!valid) {
-    silent === false && warn(namePrefix + 'value "' + value + '" should be of type "' + expectedType + '"');
+    if (silent === false) {
+      warn(namePrefix + 'value "' + String(value) + '" should be of type "' + String(expectedType) + '"');
+    }
+
     return false;
   }
 
   if (hasOwn.call(typeToCheck, 'validator') && isFunction(typeToCheck.validator)) {
     valid = typeToCheck.validator(value);
-    if (!valid && silent === false) warn(namePrefix + 'custom validation failed');
+    if (!valid && silent === false) {
+      warn(namePrefix + 'custom validation failed');
+    }
+
     return valid;
   }
+
   return valid;
-};
+}.bind(undefined);
 
-var warn = noop;
+/**
+ * Adds a `def` method to the object returning a new object with passed in argument
+ * as `default` property.
+ *
+ * @param {Object} type - Object to enhance.
+ */
+var withDefault = function withDefault(type) {
+  Object.defineProperty(type, 'def', {
+    value: function value(def) {
+      if (def === undefined && !this.default) {
+        return this;
+      }
 
-{
-  var hasConsole = typeof console !== 'undefined';
-  warn = function warn(msg) {
-    if (hasConsole) {
-      console.warn('[VueTypes warn]: ' + msg);
+      if (!isFunction(def) && !validateType(this, def)) {
+        warn(String(this._vueTypes_name) + ' - invalid default value: "' + String(def) + '"', def);
+
+        return this;
+      }
+
+      this.default = isArray$1(def) || isPlainObject_1(def) ? function getDefault() {
+        return def;
+      } : def;
+
+      return this;
     }
-  };
-}
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  });
 };
 
-var VuePropTypes = {
+/**
+ * Adds a `isRequired` getter returning a new object with `required: true` key-value.
+ *
+ * @param {Object} type - Object to enhance.
+ */
+var withRequired = function withRequired(type) {
+  Object.defineProperty(type, 'isRequired', {
+    get: function get() {
+      this.required = true;
+      return this;
+    }
+  });
+};
 
-  get any() {
-    return toType('any', {
-      type: null
-    });
-  },
+/**
+ * Adds `isRequired` and `def` modifiers to an object.
+ *
+ * @param {string} name - Type internal name.
+ * @param {Object} obj - Object to enhance.
+ * @returns {Object}
+ */
+var toType = function (name, obj) {
+  _newArrowCheck(this, _this);
 
-  get func() {
-    return toType('function', {
-      type: Function
-    }).def(currentDefaults.func);
-  },
+  Object.defineProperty(obj, '_vueTypes_name', {
+    value: name
+  });
 
-  get bool() {
-    return toType('boolean', {
-      type: Boolean
-    }).def(currentDefaults.bool);
-  },
+  withRequired(obj);
+  withDefault(obj);
 
-  get string() {
-    return toType('string', {
-      type: String
-    }).def(currentDefaults.string);
-  },
+  if (isFunction(obj.validator)) {
+    _Reflect$set(obj, 'validator', obj.validator.bind(obj));
+  }
 
-  get number() {
-    return toType('number', {
-      type: Number
-    }).def(currentDefaults.number);
-  },
+  return obj;
+}.bind(undefined);
 
-  get array() {
-    return toType('array', {
-      type: Array
-    }).def(currentDefaults.array);
-  },
+var _this$1 = undefined;
 
-  get object() {
-    return toType('object', {
-      type: Object
-    }).def(currentDefaults.object);
-  },
+var typeDefaults = function () {
+  _newArrowCheck(this, _this$1);
 
-  get integer() {
-    return toType('integer', {
-      type: Number,
-      validator: function validator(value) {
-        return isInteger(value);
-      }
-    }).def(currentDefaults.integer);
-  },
+  return {
+    func: noop_1,
+    bool: true,
+    string: '',
+    number: 0,
+    array: stubArray_1,
+    object: stubObject_1,
+    integer: 0
+  };
+}.bind(undefined);
 
-  get symbol() {
-    return toType('symbol', {
-      type: null,
-      validator: function validator(value) {
-        return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'symbol';
-      }
-    });
-  },
+var currentDefaults = typeDefaults();
 
+var VuePropTypes = _Object$defineProperties({
   custom: function custom(validatorFn) {
     var warnMsg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'custom validation failed';
 
@@ -422,28 +1698,40 @@ var VuePropTypes = {
     return toType(validatorFn.name || '<<anonymous function>>', {
       validator: function validator() {
         var valid = validatorFn.apply(undefined, arguments);
-        if (!valid) warn(this._vueTypes_name + ' - ' + warnMsg);
+        if (!valid) {
+          warn(String(this._vueTypes_name) + ' - ' + String(warnMsg));
+        }
+
         return valid;
       }
     });
   },
   oneOf: function oneOf(arr) {
-    if (!isArray(arr)) {
+    var _this2 = this;
+
+    if (!isArray$1(arr)) {
       throw new TypeError('[VueTypes error]: You must provide an array as argument');
     }
-    var msg = 'oneOf - value should be one of "' + arr.join('", "') + '"';
+    var msg = 'oneOf - value should be one of "' + String(arr.join('", "')) + '"';
     var allowedTypes = arr.reduce(function (ret, v) {
-      if (v !== null && v !== undefined) {
-        ret.indexOf(v.constructor) === -1 && ret.push(v.constructor);
+      _newArrowCheck(this, _this2);
+
+      if (!isNil_1(v)) {
+        if (ret.indexOf(v.constructor) === -1) {
+          ret.push(v.constructor);
+        }
       }
       return ret;
-    }, []);
+    }.bind(this), []);
 
     return toType('oneOf', {
       type: allowedTypes.length > 0 ? allowedTypes : null,
       validator: function validator(value) {
         var valid = arr.indexOf(value) !== -1;
-        if (!valid) warn(msg);
+        if (!valid) {
+          warn(msg);
+        }
+
         return valid;
       }
     });
@@ -454,28 +1742,34 @@ var VuePropTypes = {
     });
   },
   oneOfType: function oneOfType(arr) {
-    if (!isArray(arr)) {
+    var _this3 = this;
+
+    if (!isArray$1(arr)) {
       throw new TypeError('[VueTypes error]: You must provide an array as argument');
     }
 
     var hasCustomValidators = false;
 
-    var nativeChecks = arr.reduce(function (ret, type, i) {
-      if (lodash_isplainobject(type)) {
+    var nativeChecks = arr.reduce(function (ret, type) {
+      _newArrowCheck(this, _this3);
+
+      if (isPlainObject_1(type)) {
         if (type._vueTypes_name === 'oneOf') {
           return ret.concat(type.type || []);
         }
+
         if (type.type && !isFunction(type.validator)) {
-          if (isArray(type.type)) return ret.concat(type.type);
+          if (isArray$1(type.type)) return ret.concat(type.type);
           ret.push(type.type);
         } else if (isFunction(type.validator)) {
           hasCustomValidators = true;
         }
+
         return ret;
       }
       ret.push(type);
       return ret;
-    }, []);
+    }.bind(this), []);
 
     if (!hasCustomValidators) {
       // we got just native objects (ie: Array, Object)
@@ -486,33 +1780,54 @@ var VuePropTypes = {
     }
 
     var typesStr = arr.map(function (type) {
-      if (type && isArray(type.type)) {
+      _newArrowCheck(this, _this3);
+
+      if (type && isArray$1(type.type)) {
         return type.type.map(getType);
       }
-      return getType(type);
-    }).reduce(function (ret, type) {
-      return ret.concat(isArray(type) ? type : [type]);
-    }, []).join('", "');
 
-    return this.custom(function oneOfType(value) {
+      return getType(type);
+    }.bind(this)).reduce(function (ret, type) {
+      _newArrowCheck(this, _this3);
+
+      return ret.concat(isArray$1(type) ? type : [type]);
+    }.bind(this), []).join('", "');
+
+    return this.custom(function (value) {
+      _newArrowCheck(this, _this3);
+
       var valid = arr.some(function (type) {
+        _newArrowCheck(this, _this3);
+
         if (type._vueTypes_name === 'oneOf') {
           return type.type ? validateType(type.type, value, true) : true;
         }
+
         return validateType(type, value, true);
-      });
-      if (!valid) warn('oneOfType - value type should be one of "' + typesStr + '"');
+      }.bind(this));
+
+      if (!valid) {
+        warn('oneOfType - value type should be one of "' + String(typesStr) + '"');
+      }
+
       return valid;
-    });
+    }.bind(this));
   },
   arrayOf: function arrayOf(type) {
     return toType('arrayOf', {
       type: Array,
       validator: function validator(values) {
+        var _this4 = this;
+
         var valid = values.every(function (value) {
+          _newArrowCheck(this, _this4);
+
           return validateType(type, value);
-        });
-        if (!valid) warn('arrayOf - value must be an array of "' + getType(type) + '"');
+        }.bind(this));
+        if (!valid) {
+          warn('arrayOf - value must be an array of "' + String(getType(type)) + '"');
+        }
+
         return valid;
       }
     });
@@ -521,99 +1836,187 @@ var VuePropTypes = {
     return toType('objectOf', {
       type: Object,
       validator: function validator(obj) {
-        var valid = Object.keys(obj).every(function (key) {
+        var _this5 = this;
+
+        var valid = _Object$keys(obj).every(function (key) {
+          _newArrowCheck(this, _this5);
+
           return validateType(type, obj[key]);
-        });
-        if (!valid) warn('objectOf - value must be an object of "' + getType(type) + '"');
+        }.bind(this));
+        if (!valid) {
+          warn('objectOf - value must be an object of "' + String(getType(type)) + '"');
+        }
+
         return valid;
       }
     });
   },
   shape: function shape(obj) {
-    var keys = Object.keys(obj);
+    var _this6 = this;
+
+    var keys = _Object$keys(obj);
     var requiredKeys = keys.filter(function (key) {
+      _newArrowCheck(this, _this6);
+
       return obj[key] && obj[key].required === true;
-    });
+    }.bind(this));
 
     var type = toType('shape', {
       type: Object,
       validator: function validator(value) {
-        var _this = this;
+        var _this7 = this;
 
-        if (!lodash_isplainobject(value)) {
+        if (!isPlainObject_1(value)) {
           return false;
         }
-        var valueKeys = Object.keys(value);
+
+        var valueKeys = _Object$keys(value);
 
         // check for required keys (if any)
         if (requiredKeys.length > 0 && requiredKeys.some(function (req) {
+          _newArrowCheck(this, _this7);
+
           return valueKeys.indexOf(req) === -1;
-        })) {
-          warn('shape - at least one of required properties "' + requiredKeys.join('", "') + '" is not present');
+        }.bind(this))) {
+          warn('shape - at least one of required properties "' + String(requiredKeys.join('", "')) + '" is not present');
+
           return false;
         }
 
         return valueKeys.every(function (key) {
+          _newArrowCheck(this, _this7);
+
           if (keys.indexOf(key) === -1) {
-            if (_this._vueTypes_isLoose === true) return true;
-            warn('shape - object is missing "' + key + '" property');
+            if (this._vueTypes_isLoose === true) {
+              return true;
+            }
+
+            warn('shape - object is missing "' + String(key) + '" property');
+
             return false;
           }
-          var type = obj[key];
-          return validateType(type, value[key]);
-        });
+
+          return validateType(obj[key], value[key]);
+        }.bind(this));
       }
     });
 
     Object.defineProperty(type, '_vueTypes_isLoose', {
-      enumerable: false,
-      writable: true,
-      value: false
+      value: false,
+      writable: true
     });
 
     Object.defineProperty(type, 'loose', {
-      get: function get$$1() {
+      get: function get() {
         this._vueTypes_isLoose = true;
-        return this;
-      },
 
-      enumerable: false
+        return this;
+      }
     });
 
     return type;
   }
-};
-
-var typeDefaults = function typeDefaults() {
-  return {
-    func: noop,
-    bool: true,
-    string: '',
-    number: 0,
-    array: function array() {
-      return [];
+}, {
+  any: {
+    get: function get() {
+      return toType('any', {
+        type: null
+      });
     },
-    object: function object() {
-      return {};
+    configurable: true,
+    enumerable: true
+  },
+  func: {
+    get: function get() {
+      return toType('function', {
+        type: Function
+      }).def(currentDefaults.func);
     },
-    integer: 0
-  };
-};
-
-var currentDefaults = typeDefaults();
+    configurable: true,
+    enumerable: true
+  },
+  bool: {
+    get: function get() {
+      return toType('boolean', {
+        type: Boolean
+      }).def(currentDefaults.bool);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  string: {
+    get: function get() {
+      return toType('string', {
+        type: String
+      }).def(currentDefaults.string);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  number: {
+    get: function get() {
+      return toType('number', {
+        type: Number
+      }).def(currentDefaults.number);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  array: {
+    get: function get() {
+      return toType('array', {
+        type: Array
+      }).def(currentDefaults.array);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  object: {
+    get: function get() {
+      return toType('object', {
+        type: Object
+      }).def(currentDefaults.object);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  integer: {
+    get: function get() {
+      return toType('integer', {
+        type: Number,
+        validator: function validator(value) {
+          return isInteger$3(value);
+        }
+      }).def(currentDefaults.integer);
+    },
+    configurable: true,
+    enumerable: true
+  },
+  symbol: {
+    get: function get() {
+      return toType('symbol', {
+        type: null,
+        validator: function validator(value) {
+          return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'symbol';
+        }
+      });
+    },
+    configurable: true,
+    enumerable: true
+  }
+});
 
 Object.defineProperty(VuePropTypes, 'sensibleDefaults', {
-  enumerable: false,
-  set: function set$$1(value) {
+  set: function set(value) {
     if (value === false) {
       currentDefaults = {};
     } else if (value === true) {
       currentDefaults = typeDefaults();
-    } else if (lodash_isplainobject(value)) {
+    } else if (isPlainObject_1(value)) {
       currentDefaults = value;
     }
   },
-  get: function get$$1() {
+  get: function get() {
     return currentDefaults;
   }
 });
