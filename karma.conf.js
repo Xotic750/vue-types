@@ -1,7 +1,7 @@
 // Karma configuration
 // Generated on Wed Oct 26 2016 17:54:27 GMT+0200 (CEST)
 
-const path = require('path');
+// const path = require('path');
 const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const babel = require('rollup-plugin-babel');
@@ -22,7 +22,10 @@ const baseConfig = {
 
   // list of files / patterns to load in the browser
   files: [
-    { pattern: 'src/*.js', included: false },
+    {
+      pattern: 'src/*.js',
+      included: false
+    },
     'test/**/*.spec.js'
   ],
 
@@ -71,16 +74,21 @@ const baseConfig = {
   colors: true,
 
   concurrency: Infinity
-}
+};
 
 module.exports = (config) => {
   config.set(Object.assign({}, baseConfig, {
 
     // level of logging
-    // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+    // possible values:
+    //   config.LOG_DISABLE
+    //   config.LOG_ERROR
+    //   config.LOG_WARN
+    //   config.LOG_INFO
+    //   config.LOG_DEBUG
 
     logLevel: config.LOG_INFO
   }));
 };
 
-module.exports.baseConfig = baseConfig
+module.exports.baseConfig = baseConfig;

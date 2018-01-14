@@ -2,5 +2,4 @@ dist
 es
 umd
 node_modules
-*.conf.js
-*.config.js
+!.eslintrc.js
